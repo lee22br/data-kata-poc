@@ -1,0 +1,79 @@
+x-flink-env: &flink-env
+  SOURCE_DB_URL: jdbc:postgresql://postgres:5432/salesdb
+  SOURCE_DB_USER: poc
+  SOURCE_DB_PASS: poc123
+  SINK_DB_URL: jdbc:postgresql://postgres:5432/salesdb
+  SINK_DB_USER: poc
+  SINK_DB_PASS: poc123
+  # Date filter passed to the Flink job as --from / --to (yyyy-MM-dd).
+  # Override at runtime: JOB_FROM_DATE=2024-02-01 JOB_TO_DATE=2024-02-29 docker compose up
+  JOB_FROM_DATE: "2024-02-01"
+  JOB_TO_DATE: "2024-02-29"
+
+services:
+
+  # Database (source + sink — same instance, different tables)
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: poc
+      POSTGRES_PASSWORD: poc123
+      POSTGRES_DB: salesdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poc -d salesdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Flink Cluster
+  flink-jobmanager:
+    image: flink:1.18-java11
+    command: jobmanager
+    ports:
+      - "8084:8081"
+    environment:
+      <<: *flink-env
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        rest.bind-port: 8081
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8081/overview"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  flink-taskmanager:
+    image: flink:1.18-java11
+    command: taskmanager
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+    environment:
+      <<: *flink-env
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+
+  # Builds the fat JAR, submits to the Flink cluster, and waits for completion
+  # Note: no -d flag — batch jobs run to completion and exit cleanly
+  flink-job-submit:
+    build: ./flink-job
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *flink-env
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["echo 'Submitting batch job...' && flink run -m flink-jobmanager:8081 -c com.poc.BatchJob /opt/flink/usrlib/flink-job.jar --from $$JOB_FROM_DATE --to $$JOB_TO_DATE && echo 'Batch job completed successfully.'"]
+
+volumes:
+  postgres-data:

@@ -1,0 +1,11 @@
+# Java
+flink-job/target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
