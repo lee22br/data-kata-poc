@@ -46,6 +46,13 @@
       <version>42.7.3</version>
     </dependency>
 
+      <!-- OpenLineage -->
+      <dependency>
+          <groupId>io.openlineage</groupId>
+          <artifactId>openlineage-flink</artifactId>
+          <version>1.44.1</version>
+      </dependency>
+
     <!-- SLF4J (provided by Flink runtime — needed at compile time) -->
     <dependency>
       <groupId>org.slf4j</groupId>

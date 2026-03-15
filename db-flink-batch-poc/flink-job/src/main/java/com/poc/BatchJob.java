@@ -1,7 +1,5 @@
 package com.poc;
 
-import com.poc.BatchJob.CityAcc;
-import com.poc.BatchJob.SalesmanAcc;
 import com.poc.model.SaleEvent;
 import com.poc.model.SalesRank;
 import org.apache.flink.api.common.RuntimeExecutionMode;
@@ -219,6 +217,9 @@ public class BatchJob {
         ).name("Sink: Salesman Totals --> PostgreSQL");
 
         env.execute("Sales Rankings Batch Job");
+        System.out.println("Waiting...4s");
+        Thread.sleep(4000);
+        System.out.println("Done");
     }
 
     private static long parseDate(String s) {

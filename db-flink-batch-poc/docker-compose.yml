@@ -11,10 +11,35 @@ x-flink-env: &flink-env
   JOB_TO_DATE: "2024-02-29"
 
 services:
+    # 1. Adicione o Marquez para visualizar a linhagem
+  marquez:
+    image: marquezproject/marquez:0.50.0
+    container_name: marquez
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+      - "3000:3000"
+    environment:
+      - MARQUEZ_DB_HOST=postgres
+      - MARQUEZ_DB_PORT=5432
+      - MARQUEZ_DB_NAME=marquez
+      - MARQUEZ_DB_USER=marquez
+      - MARQUEZ_DB_PASSWORD=marquez
+      # Força a ativação da interface gráfica
+      - MARQUEZ_UI_ENABLED=true
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # Database (source + sink — same instance, different tables)
   postgres:
-    image: postgres:16
+    image: postgres:14
+    container_name: postgres
+    networks:
+      default:
+        aliases:
+          - postgres_db
+          - localhost
     environment:
       POSTGRES_USER: poc
       POSTGRES_PASSWORD: poc123
@@ -26,21 +51,30 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U poc -d salesdb"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 5
 
   # Flink Cluster
   flink-jobmanager:
     image: flink:1.18-java11
     command: jobmanager
+    container_name: flink-jobmanager
     ports:
       - "8084:8081"
+    volumes:
+      # Certifique-se de colocar o JAR do openlineage na pasta lib
+      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
+      - ./openlineage.yml:/opt/flink/openlineage.yml
     environment:
       <<: *flink-env
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         rest.bind-port: 8081
+        #Configurações do OpenLineage abaixo:
+        execution.job-listeners: io.openlineage.flink.OpenLineageJobListener
+        logger.io.openlineage.client.transports.HttpTransport: DEBUG
+        env.java.opts: "-Dopenlineage.url=http://marquez:5000/api/v1/lineage -Dopenlineage.namespace=kata_data -Dopenlineage.transport.type=http"
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/overview"]
       interval: 15s
@@ -50,6 +84,11 @@ services:
   flink-taskmanager:
     image: flink:1.18-java11
     command: taskmanager
+    container_name: flink-taskmanager
+    volumes:
+      # O TaskManager também precisa do JAR para serialização dos eventos
+      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
+      - ./openlineage.yml:/opt/flink/openlineage.yml
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -58,11 +97,15 @@ services:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4
+        OPENLINEAGE_CONFIG=/opt/flink/openlineage.yml
+        
 
   # Builds the fat JAR, submits to the Flink cluster, and waits for completion
   # Note: no -d flag — batch jobs run to completion and exit cleanly
   flink-job-submit:
     build: ./flink-job
+    volumes:
+      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -73,7 +116,8 @@ services:
     environment:
       <<: *flink-env
     entrypoint: ["/bin/sh", "-c"]
-    command: ["echo 'Submitting batch job...' && flink run -m flink-jobmanager:8081 -c com.poc.BatchJob /opt/flink/usrlib/flink-job.jar --from $$JOB_FROM_DATE --to $$JOB_TO_DATE && echo 'Batch job completed successfully.'"]
+    command: ["echo 'Submitting batch job...' && flink run -m flink-jobmanager:8081 \
+    -c com.poc.BatchJob /opt/flink/usrlib/flink-job.jar --from $$JOB_FROM_DATE --to $$JOB_TO_DATE && echo 'Batch job completed successfully.'"]
 
 volumes:
   postgres-data:

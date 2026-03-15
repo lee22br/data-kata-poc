@@ -1,4 +1,9 @@
+CREATE DATABASE marquez;
+CREATE USER marquez WITH PASSWORD 'marquez';
+GRANT ALL PRIVILEGES ON DATABASE marquez TO marquez;
 
+-- 2. Conectar no banco do Job (salesdb) para criar as tabelas de negócio
+\c salesdb;
 -- Source table
 CREATE TABLE IF NOT EXISTS source_sales (
     sale_id       VARCHAR(50)    PRIMARY KEY,
