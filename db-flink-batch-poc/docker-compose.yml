@@ -68,13 +68,11 @@ services:
       - ./openlineage.yml:/opt/flink/openlineage.yml
     environment:
       <<: *flink-env
+      OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         rest.bind-port: 8081
-        #Configurações do OpenLineage abaixo:
         execution.job-listeners: io.openlineage.flink.OpenLineageJobListener
-        logger.io.openlineage.client.transports.HttpTransport: DEBUG
-        env.java.opts: "-Dopenlineage.url=http://marquez:5000/api/v1/lineage -Dopenlineage.namespace=kata_data -Dopenlineage.transport.type=http"
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/overview"]
       interval: 15s
@@ -94,11 +92,10 @@ services:
         condition: service_healthy
     environment:
       <<: *flink-env
+      OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4
-        OPENLINEAGE_CONFIG=/opt/flink/openlineage.yml
-        
 
   # Builds the fat JAR, submits to the Flink cluster, and waits for completion
   # Note: no -d flag — batch jobs run to completion and exit cleanly
