@@ -186,31 +186,35 @@ public class BatchJob {
             "DO UPDATE SET total_sales = EXCLUDED.total_sales";
 
         topSalesPerCity.sinkTo(
-            JdbcSink.<SalesRank>builder()
-                .withQueryStatement(upsertSql, (stmt, r) -> {
+            JdbcSink.sink(
+                upsertSql,
+                (stmt, r) -> {
                     stmt.setString(1, r.rankType);
                     stmt.setString(2, r.groupKey);
                     stmt.setString(3, r.entityId);   // null for CITY
                     stmt.setDouble(4, r.totalSales);
                     stmt.setTimestamp(5, r.windowStart);
                     stmt.setTimestamp(6, r.windowEnd);
-                })
-                .withExecutionOptions(jdbcExecOpts)
-                .buildAtLeastOnce(jdbcConnOpts)
+                },
+                jdbcExecOpts,
+                jdbcConnOpts
+            )
         ).name("Sink: City Totals --> PostgreSQL");
 
         topSalesmanCountry.sinkTo(
-            JdbcSink.<SalesRank>builder()
-                .withQueryStatement(upsertSql, (stmt, r) -> {
+            JdbcSink.sink(
+                upsertSql,
+                (stmt, r) -> {
                     stmt.setString(1, r.rankType);
                     stmt.setString(2, r.groupKey);
                     stmt.setString(3, r.entityId);
                     stmt.setDouble(4, r.totalSales);
                     stmt.setTimestamp(5, r.windowStart);
                     stmt.setTimestamp(6, r.windowEnd);
-                })
-                .withExecutionOptions(jdbcExecOpts)
-                .buildAtLeastOnce(jdbcConnOpts)
+                },
+                jdbcExecOpts,
+                jdbcConnOpts
+            )
         ).name("Sink: Salesman Totals --> PostgreSQL");
 
         env.execute("Sales Rankings Batch Job");
