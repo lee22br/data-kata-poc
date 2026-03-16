@@ -31,11 +31,25 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- JDBC connector core for Flink 2.0 -->
+    <!-- JDBC Sink for Flink 2.0 (new Sink V2 API) -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-connector-jdbc-core</artifactId>
       <version>4.0.0-2.0</version>
+    </dependency>
+
+    <!-- JDBC Source - usando versão 1.20 (compatível via provided scope do Flink) -->
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-connector-jdbc</artifactId>
+      <version>3.3.0-1.20</version>
+      <exclusions>
+        <!-- Excluir classes que conflitam com jdbc-core -->
+        <exclusion>
+          <groupId>org.apache.flink</groupId>
+          <artifactId>flink-connector-jdbc-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- PostgreSQL driver -->
