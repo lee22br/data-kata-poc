@@ -31,11 +31,11 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- JDBC connector + sink -->
+    <!-- JDBC connector core for Flink 2.0 -->
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-jdbc</artifactId>
-      <version>3.3.0-2.0</version>
+      <artifactId>flink-connector-jdbc-core</artifactId>
+      <version>4.0.0-2.0</version>
     </dependency>
 
     <!-- PostgreSQL driver -->

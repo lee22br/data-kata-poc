@@ -5,9 +5,10 @@ import com.poc.model.SalesRank;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.connector.jdbc.core.datastream.sink.JdbcSink;
+import org.apache.flink.connector.jdbc.core.datastream.sink.JdbcSinkBuilder;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
-import org.apache.flink.connector.jdbc.JdbcSink;
 import org.apache.flink.connector.jdbc.source.JdbcSource;
 import org.apache.flink.connector.jdbc.source.reader.extractor.ResultExtractor;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -186,35 +187,31 @@ public class BatchJob {
             "DO UPDATE SET total_sales = EXCLUDED.total_sales";
 
         topSalesPerCity.sinkTo(
-            JdbcSink.sink(
-                upsertSql,
-                (stmt, r) -> {
+            JdbcSink.<SalesRank>builder()
+                .withQueryStatement(upsertSql, (stmt, r) -> {
                     stmt.setString(1, r.rankType);
                     stmt.setString(2, r.groupKey);
                     stmt.setString(3, r.entityId);   // null for CITY
                     stmt.setDouble(4, r.totalSales);
                     stmt.setTimestamp(5, r.windowStart);
                     stmt.setTimestamp(6, r.windowEnd);
-                },
-                jdbcExecOpts,
-                jdbcConnOpts
-            )
+                })
+                .withExecutionOptions(jdbcExecOpts)
+                .buildAtLeastOnce(jdbcConnOpts)
         ).name("Sink: City Totals --> PostgreSQL");
 
         topSalesmanCountry.sinkTo(
-            JdbcSink.sink(
-                upsertSql,
-                (stmt, r) -> {
+            JdbcSink.<SalesRank>builder()
+                .withQueryStatement(upsertSql, (stmt, r) -> {
                     stmt.setString(1, r.rankType);
                     stmt.setString(2, r.groupKey);
                     stmt.setString(3, r.entityId);
                     stmt.setDouble(4, r.totalSales);
                     stmt.setTimestamp(5, r.windowStart);
                     stmt.setTimestamp(6, r.windowEnd);
-                },
-                jdbcExecOpts,
-                jdbcConnOpts
-            )
+                })
+                .withExecutionOptions(jdbcExecOpts)
+                .buildAtLeastOnce(jdbcConnOpts)
         ).name("Sink: Salesman Totals --> PostgreSQL");
 
         env.execute("Sales Rankings Batch Job");
