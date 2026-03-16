@@ -14,7 +14,7 @@ x-flink-env: &flink-env
   OPENLINEAGE_TRANSPORT_TYPE: "http"
   # Se o seu JAR for 1.18+, adicione:
   OPENLINEAGE_ENDPOINT: "/api/v1/lineage"
-  OPENLINEAGE_jobName: "SalesRankingsBatchJob"
+  OPENLINEAGE_JOBNAME: "SalesRankingsBatchJob"
 
 services:
     # 1. Adicione o Marquez para visualizar a linhagem
@@ -73,14 +73,14 @@ services:
 
   # Flink Cluster
   flink-jobmanager:
-    image: flink:1.18-java11
+    image: flink:2.2.0-java11
     command: jobmanager
     container_name: flink-jobmanager
     ports:
       - "8084:8081"
     volumes:
       # Certifique-se de colocar o JAR do openlineage na pasta lib
-      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
+      - ./lib/openlineage-flink-1.45.0.jar:/opt/flink/lib/openlineage-flink.jar
       - ./openlineage.yml:/opt/flink/openlineage.yml
     environment:
       OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
@@ -102,12 +102,12 @@ services:
       retries: 10
 
   flink-taskmanager:
-    image: flink:1.18-java11
+    image: flink:2.2.0-java11
     command: taskmanager
     container_name: flink-taskmanager
     volumes:
       # O TaskManager também precisa do JAR para serialização dos eventos
-      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
+      - ./lib/openlineage-flink-1.45.0.jar:/opt/flink/lib/openlineage-flink.jar
       - ./openlineage.yml:/opt/flink/openlineage.yml
     depends_on:
       flink-jobmanager:
@@ -126,7 +126,7 @@ services:
   flink-job-submit:
     build: ./flink-job
     volumes:
-      - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
+      - ./lib/openlineage-flink-1.45.0.jar:/opt/flink/lib/openlineage-flink.jar
     depends_on:
       flink-jobmanager:
         condition: service_healthy

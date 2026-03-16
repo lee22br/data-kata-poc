@@ -9,9 +9,8 @@
   <artifactId>flink-job</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
-
   <properties>
-    <flink.version>1.18.1</flink.version>
+    <flink.version>2.2.0</flink.version>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,7 +49,7 @@
       <dependency>
           <groupId>io.openlineage</groupId>
           <artifactId>openlineage-flink</artifactId>
-          <version>1.44.1</version>
+          <version>1.45.0</version>
       </dependency>
 
     <!-- SLF4J (provided by Flink runtime — needed at compile time) -->
