@@ -9,6 +9,12 @@ x-flink-env: &flink-env
   # Override at runtime: JOB_FROM_DATE=2024-02-01 JOB_TO_DATE=2024-02-29 docker compose up
   JOB_FROM_DATE: "2024-02-01"
   JOB_TO_DATE: "2024-02-29"
+  OPENLINEAGE_URL: "http://marquez:5000"
+  OPENLINEAGE_NAMESPACE: "kata_data"
+  OPENLINEAGE_TRANSPORT_TYPE: "http"
+  # Se o seu JAR for 1.18+, adicione:
+  OPENLINEAGE_ENDPOINT: "/api/v1/lineage"
+  OPENLINEAGE_jobName: "SalesRankingsBatchJob"
 
 services:
     # 1. Adicione o Marquez para visualizar a linhagem
@@ -18,7 +24,6 @@ services:
     ports:
       - "5000:5000"
       - "5001:5001"
-      - "3000:3000"
     environment:
       - MARQUEZ_DB_HOST=postgres
       - MARQUEZ_DB_PORT=5432
@@ -30,7 +35,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
+  marquez-ui:
+    image: marquezproject/marquez-web:0.50.0
+    container_name: marquez-ui
+    ports:
+      - "3000:3000"
+    environment:
+      - MARQUEZ_API_URL=http://marquez:5000
+      - MARQUEZ_HOST=marquez
+      - MARQUEZ_PORT=5000
+      - WEB_PORT=3000
+    depends_on:
+      - marquez
   # Database (source + sink — same instance, different tables)
   postgres:
     image: postgres:14
@@ -67,12 +83,18 @@ services:
       - ./lib/openlineage-flink-1.44.1.jar:/opt/flink/lib/openlineage-flink.jar
       - ./openlineage.yml:/opt/flink/openlineage.yml
     environment:
-      <<: *flink-env
       OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
+      OPENLINEAGE_URL: http://marquez:5000/api/v1/lineage
+      OPENLINEAGE_NAMESPACE: kata_data
+      <<: *flink-env
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         rest.bind-port: 8081
         execution.job-listeners: io.openlineage.flink.OpenLineageJobListener
+        classloader.resolve-order: parent-first
+        OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
+        # Força o transporte diretamente via Env Var para o Agente não ter desculpa
+
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/overview"]
       interval: 15s
@@ -93,6 +115,8 @@ services:
     environment:
       <<: *flink-env
       OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
+      OPENLINEAGE_URL: http://marquez:5000/api/v1/lineage
+      OPENLINEAGE_NAMESPACE: kata_data
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4

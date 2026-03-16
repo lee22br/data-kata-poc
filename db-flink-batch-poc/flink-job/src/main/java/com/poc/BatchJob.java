@@ -214,8 +214,8 @@ public class BatchJob {
         ).name("Sink: Salesman Totals --> PostgreSQL");
 
         env.execute("Sales Rankings Batch Job");
-        System.out.println("Waiting...4s");
-        Thread.sleep(4000);
+        System.out.println("Aguardando envio de metadados (7s)...");
+        Thread.sleep(7000);
         System.out.println("Done");
     }
 
