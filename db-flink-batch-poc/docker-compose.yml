@@ -14,7 +14,7 @@ x-flink-env: &flink-env
   OPENLINEAGE_TRANSPORT_TYPE: "http"
   # Se o seu JAR for 1.18+, adicione:
   OPENLINEAGE_ENDPOINT: "/api/v1/lineage"
-  OPENLINEAGE_JOBNAME: "SalesRankingsBatchJob"
+  OPENLINEAGE_JOBNAME: "KATA_DATA_JOB"
 
 services:
     # 1. Adicione o Marquez para visualizar a linhagem
@@ -90,7 +90,7 @@ services:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         rest.bind-port: 8081
-        execution.job-listeners: io.openlineage.flink.OpenLineageJobListener
+        execution.job-status-changed-listeners = io.openlineage.flink.listener.OpenLineageJobStatusChangedListenerFactory
         classloader.resolve-order: parent-first
         OPENLINEAGE_CONFIG: /opt/flink/openlineage.yml
         # Força o transporte diretamente via Env Var para o Agente não ter desculpa

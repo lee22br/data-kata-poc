@@ -4,7 +4,9 @@ transport:
   endpoint: "/api/v1/lineage"
   timeout: 5000
 namespace: "kata_data"
-jobName: "SalesRankingsBatchJob"
+jobName: "KATA_DATA_JOB"
+circuitBreaker:
+  type: "no-op"
 facets:
   disabled: []
   custom_facets:

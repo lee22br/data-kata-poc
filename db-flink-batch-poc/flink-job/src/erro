@@ -1,76 +1,55 @@
-PS E:\WORK\LNAIX\Estudos\team-gray\data-kata-poc\db-flink-batch-poc> docker compose build flink-job-submit
-[+] Building 7.2s (13/14)
- => [internal] load local bake definitions                                                                                                                                                                                     0.0s
- => => reading from stdin 678B                                                                                                                                                                                                 0.0s
- => [internal] load build definition from Dockerfile                                                                                                                                                                           0.0s
- => => transferring dockerfile: 465B                                                                                                                                                                                           0.0s
- => [internal] load metadata for docker.io/library/flink:2.2.0-java11                                                                                                                                                          0.1s
- => [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-11                                                                                                                                                0.6s
- => [internal] load .dockerignore                                                                                                                                                                                              0.0s
- => => transferring context: 2B                                                                                                                                                                                                0.0s
- => [builder 1/6] FROM docker.io/library/maven:3.9-eclipse-temurin-11@sha256:a7c742e2e8c4fae9bddde6d238583fc571b8f6db00233e809ec462c59f3ce042                                                                                  0.0s
- => => resolve docker.io/library/maven:3.9-eclipse-temurin-11@sha256:a7c742e2e8c4fae9bddde6d238583fc571b8f6db00233e809ec462c59f3ce042                                                                                          0.0s
- => [internal] load build context                                                                                                                                                                                              0.0s
- => => transferring context: 445B                                                                                                                                                                                              0.0s
- => CACHED [stage-1 1/2] FROM docker.io/library/flink:2.2.0-java11@sha256:bdcea42b758cd2d78f0dbeba02f04af37ca483544efbf8912e66723461e58123                                                                                     0.0s
- => => resolve docker.io/library/flink:2.2.0-java11@sha256:bdcea42b758cd2d78f0dbeba02f04af37ca483544efbf8912e66723461e58123                                                                                                    0.0s
- => CACHED [builder 2/6] WORKDIR /app                                                                                                                                                                                          0.0s
- => CACHED [builder 3/6] COPY pom.xml .                                                                                                                                                                                        0.0s
- => CACHED [builder 4/6] RUN mvn org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline -q                                                                                                                          0.0s
- => CACHED [builder 5/6] COPY src ./src                                                                                                                                                                                        0.0s
- => ERROR [builder 6/6] RUN mvn package -DskipTests -q                                                                                                                                                                         6.0s
-------
- > [builder 6/6] RUN mvn package -DskipTests -q:
-5.831 [ERROR] COMPILATION ERROR :
-5.831 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[12,46] package org.apache.flink.connector.jdbc.source does not exist
-5.831 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[13,63] package org.apache.flink.connector.jdbc.source.reader.extractor does not exist
-5.832 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[85,9] cannot find symbol
-5.832   symbol:   class ResultExtractor
-5.832   location: class com.poc.BatchJob
-5.834 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[99,9] cannot find symbol
-5.834   symbol:   class JdbcSource
-5.834   location: class com.poc.BatchJob
-5.834 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[99,44] cannot find symbol
-5.834   symbol:   variable JdbcSource
-5.834   location: class com.poc.BatchJob
-5.835 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project flink-job: Compilation failure: Compilation failure:
-5.836 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[12,46] package org.apache.flink.connector.jdbc.source does not exist
-5.836 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[13,63] package org.apache.flink.connector.jdbc.source.reader.extractor does not exist
-5.836 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[85,9] cannot find symbol
-5.836 [ERROR]   symbol:   class ResultExtractor
-5.836 [ERROR]   location: class com.poc.BatchJob
-5.837 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[99,9] cannot find symbol
-5.838 [ERROR]   symbol:   class JdbcSource
-5.838 [ERROR]   location: class com.poc.BatchJob
-5.839 [ERROR] /app/src/main/java/com/poc/BatchJob.java:[99,44] cannot find symbol
-5.840 [ERROR]   symbol:   variable JdbcSource
-5.841 [ERROR]   location: class com.poc.BatchJob
-5.842 [ERROR] -> [Help 1]
-5.842 [ERROR]
-5.845 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-5.845 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
-5.845 [ERROR]
-5.846 [ERROR] For more information about the errors and possible solutions, please read the following articles:
-5.846 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
-------
-Dockerfile:9
-
---------------------
-
-   7 |
-
-   8 |     COPY src ./src
-
-   9 | >>> RUN mvn package -DskipTests -q
-
-  10 |
-
-  11 |     # Runtime / submitter stage
-
---------------------
-
-failed to solve: process "/bin/sh -c mvn package -DskipTests -q" did not complete successfully: exit code: 1
-
-
-
-View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/nduoyu2wt2katiklgzc0jr93q
+2026-03-16 22:26:57
+org.apache.flink.runtime.client.JobInitializationException: Could not start the JobMaster.
+	at org.apache.flink.runtime.jobmaster.DefaultJobMasterServiceProcess.lambda$new$0(DefaultJobMasterServiceProcess.java:97)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(Unknown Source)
+	at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(Unknown Source)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(Unknown Source)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(Unknown Source)
+	at org.apache.flink.util.MdcUtils.lambda$wrapRunnable$1(MdcUtils.java:70)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.util.concurrent.CompletionException: java.lang.RuntimeException: org.apache.flink.util.FlinkException: Could not instantiate class 'io.openlineage.flink.listener.OpenLineageJobStatusChangedListenerFactory=' of type 'org.apache.flink.core.execution.JobStatusChangedListenerFactory'. Please make sure that this class is on your class path.
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(Unknown Source)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(Unknown Source)
+	... 5 more
+Caused by: java.lang.RuntimeException: org.apache.flink.util.FlinkException: Could not instantiate class 'io.openlineage.flink.listener.OpenLineageJobStatusChangedListenerFactory=' of type 'org.apache.flink.core.execution.JobStatusChangedListenerFactory'. Please make sure that this class is on your class path.
+	at org.apache.flink.core.execution.JobStatusChangedListenerUtils.lambda$createJobStatusChangedListeners$0(JobStatusChangedListenerUtils.java:74)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(Unknown Source)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(Unknown Source)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(Unknown Source)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(Unknown Source)
+	at java.base/java.util.stream.ReferencePipeline.collect(Unknown Source)
+	at org.apache.flink.core.execution.JobStatusChangedListenerUtils.createJobStatusChangedListeners(JobStatusChangedListenerUtils.java:77)
+	at org.apache.flink.runtime.executiongraph.DefaultExecutionGraphBuilder.buildGraph(DefaultExecutionGraphBuilder.java:147)
+	at org.apache.flink.runtime.scheduler.DefaultExecutionGraphFactory.createAndRestoreExecutionGraph(DefaultExecutionGraphFactory.java:155)
+	at org.apache.flink.runtime.scheduler.SchedulerBase.createAndRestoreExecutionGraph(SchedulerBase.java:430)
+	at org.apache.flink.runtime.scheduler.SchedulerBase.<init>(SchedulerBase.java:255)
+	at org.apache.flink.runtime.scheduler.DefaultScheduler.<init>(DefaultScheduler.java:144)
+	at org.apache.flink.runtime.scheduler.adaptivebatch.AdaptiveBatchScheduler.<init>(AdaptiveBatchScheduler.java:178)
+	at org.apache.flink.runtime.scheduler.adaptivebatch.AdaptiveBatchSchedulerFactory.createScheduler(AdaptiveBatchSchedulerFactory.java:319)
+	at org.apache.flink.runtime.scheduler.adaptivebatch.AdaptiveBatchSchedulerFactory.createInstance(AdaptiveBatchSchedulerFactory.java:176)
+	at org.apache.flink.runtime.jobmaster.DefaultSlotPoolServiceSchedulerFactory.createScheduler(DefaultSlotPoolServiceSchedulerFactory.java:131)
+	at org.apache.flink.runtime.jobmaster.JobMaster.createScheduler(JobMaster.java:419)
+	at org.apache.flink.runtime.jobmaster.JobMaster.<init>(JobMaster.java:396)
+	at org.apache.flink.runtime.jobmaster.factories.DefaultJobMasterServiceFactory.internalCreateJobMasterService(DefaultJobMasterServiceFactory.java:128)
+	at org.apache.flink.runtime.jobmaster.factories.DefaultJobMasterServiceFactory.lambda$createJobMasterService$0(DefaultJobMasterServiceFactory.java:100)
+	at org.apache.flink.util.function.FunctionUtils.lambda$uncheckedSupplier$4(FunctionUtils.java:112)
+	... 5 more
+Caused by: org.apache.flink.util.FlinkException: Could not instantiate class 'io.openlineage.flink.listener.OpenLineageJobStatusChangedListenerFactory=' of type 'org.apache.flink.core.execution.JobStatusChangedListenerFactory'. Please make sure that this class is on your class path.
+	at org.apache.flink.util.InstantiationUtil.instantiate(InstantiationUtil.java:256)
+	at org.apache.flink.core.execution.JobStatusChangedListenerUtils.lambda$createJobStatusChangedListeners$0(JobStatusChangedListenerUtils.java:52)
+	... 27 more
+Caused by: java.lang.ClassNotFoundException: io.openlineage.flink.listener.OpenLineageJobStatusChangedListenerFactory=
+	at java.base/java.net.URLClassLoader.findClass(Unknown Source)
+	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+	at org.apache.flink.util.FlinkUserCodeClassLoader.loadClassWithoutExceptionHandling(FlinkUserCodeClassLoader.java:67)
+	at org.apache.flink.util.FlinkUserCodeClassLoader.loadClass(FlinkUserCodeClassLoader.java:51)
+	at java.base/java.lang.ClassLoader.loadClass(Unknown Source)
+	at org.apache.flink.util.FlinkUserCodeClassLoaders$SafetyNetWrapperClassLoader.loadClass(FlinkUserCodeClassLoaders.java:197)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Unknown Source)
+	at org.apache.flink.util.InstantiationUtil.instantiate(InstantiationUtil.java:253)
+	... 28 more
