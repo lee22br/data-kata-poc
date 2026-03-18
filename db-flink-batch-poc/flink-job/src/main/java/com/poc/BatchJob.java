@@ -214,7 +214,8 @@ public class BatchJob {
                 .buildAtLeastOnce(jdbcConnOpts)
         ).name("Sink: Salesman Totals --> PostgreSQL");
 
-        env.execute("Sales Rankings Batch Job");
+        System.out.println("DEBUG: Iniciando execução do Job com OpenLineage...");
+        env.execute("KATA_DATA_JOB");
         System.out.println("Aguardando envio de metadados (7s)...");
         Thread.sleep(7000);
         System.out.println("Done");
